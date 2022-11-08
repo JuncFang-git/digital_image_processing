@@ -6,14 +6,14 @@
 #include <cmath>
 #include <vector>
 #include "glog/logging.h"
-//#ifndef STB_IMAGE_IMPLEMENTATION
-//#define STB_IMAGE_IMPLEMENTATION
+#ifndef STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-//#endif // STB_IMAGE_IMPLEMENTATION
-//#ifndef STB_IMAGE_WRITE_IMPLEMENTATION
-//#define STB_IMAGE_WRITE_IMPLEMENTATION
+#endif // STB_IMAGE_IMPLEMENTATION
+#ifndef STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-//#endif // STB_IMAGE_WRITE_IMPLEMENTATION
+#endif // STB_IMAGE_WRITE_IMPLEMENTATION
 
 #define MIN2(a, b) ((a) < (b) ? (a) : (b))
 #define MAX2(a, b) ((a) > (b) ? (a) : (b))
@@ -620,11 +620,17 @@ void Image::lut_filter_512(const Image &lut_image, const int &ratio) {
 }
 
 void Image::reverse_color() {
-  unsigned char *data_ptr = data_;
+  if (channel_ != 3 && channel_ != 1) {
+    LOG(WARNING) << "Not support " << channel_ << " channel image at reverse_color! Skip it!";
+    return;
+  }
+  int pos = 0;
   for (int i = 0; i < height_; i++) {
     for (int j = 0; j < width_; j++) {
-      data_ptr = data_ptr + this->stride() * i + j
-
+      for (int k = 0; j < channel_; k ++) {
+        pos = i * this->stride() + j * channel_ + k;
+        data_[pos] = 255 - data_[pos];
+      }
     }
   }
 }
