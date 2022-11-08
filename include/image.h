@@ -52,6 +52,8 @@ class Image {
   void lut_filter_512(const Image &lut_image, const int &ratio);
   void change_channel(int channel1, int channel2);
   void reverse_color();
+  void threshold_binary(const int &threshold);
+  void bgr2gray();
 
  private:
   unsigned char *data_ = nullptr;

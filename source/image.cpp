@@ -620,6 +620,7 @@ void Image::lut_filter_512(const Image &lut_image, const int &ratio) {
 }
 
 void Image::reverse_color() {
+  // assert
   if (channel_ != 3 && channel_ != 1) {
     LOG(WARNING) << "Not support " << channel_ << " channel image at reverse_color! Skip it!";
     return;
@@ -633,4 +634,47 @@ void Image::reverse_color() {
       }
     }
   }
+}
+void Image::threshold_binary(const int &threshold) {
+  // assert
+  if (channel_ != 1) {
+    LOG(WARNING) <<  "Image::threshold_binary need image channel is 1, but got " << channel_ << "! Skip it!";
+    return;
+  }
+
+  // threashold
+  int pos = 0;
+  for (int i = 0; i < height_; i++) {
+    for (int j = 0; j < width_; j++) {
+        pos = i * this->stride() + j * channel_;
+        data_[pos]  = data_[pos] < threshold ? 0 : 255;
+    }
+  }
+}
+void Image::bgr2gray() {
+  // assert
+  if (data_ == nullptr) {
+    LOG(WARNING) << "Image::to_gray got an empty image! Skip it!";
+    return;
+  }
+
+  //
+  auto tmp_data_ = new unsigned char [width_ * height_];
+  int pos_original = 0;
+  int pos_gray = 0;
+  for (int i = 0; i < height_; i++) {
+    for (int j = 0; j < width_; j++) {
+      pos_original = i * this->stride() + j * channel_;
+      pos_gray = i * width_ + j;
+      tmp_data_[pos_gray] = (data_[pos_original + 0] + data_[pos_original + 1] + data_[pos_original + 2]) / 3; // average rgb
+    }
+  }
+
+  // free and re-point
+  delete data_;
+  data_ = tmp_data_;
+  tmp_data_ = nullptr;
+
+  // set
+  channel_ = 1;
 }
