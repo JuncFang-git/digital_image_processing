@@ -4,6 +4,7 @@
 #include <fstream>
 #include <climits>
 #include <cmath>
+#include <algorithm>
 #include <vector>
 #include "glog/logging.h"
 #ifndef STB_IMAGE_IMPLEMENTATION
@@ -216,7 +217,7 @@ vector<char> Image::get_bytes(const string &tmp_save_path) {
 
 void Image::add_alpha() {
   if (channel_ != 3) {
-    LOG(WARNING) << "Only 3 channel image can add alpha channel, but got " << channel_ << " channel image";
+    LOG(ERROR) << "Only 3 channel image can add alpha channel, but got " << channel_ << " channel image";
     return;
   }
   auto *tmp_data = new unsigned char [width_ * height_ * 4];
@@ -237,7 +238,7 @@ void Image::add_alpha() {
 
 void Image::delete_alpha() {
   if (channel_ != 4) {
-    LOG(WARNING) << "Only 4 channel image can delete alpha channel, but got " << channel_ << " channel image";
+    LOG(ERROR) << "Only 4 channel image can delete alpha channel, but got " << channel_ << " channel image";
     return;
   }
   auto *tmp_data = new unsigned char [width_ * height_ * 3];
@@ -622,7 +623,7 @@ void Image::lut_filter_512(const Image &lut_image, const int &ratio) {
 void Image::reverse_color() {
   // assert
   if (channel_ != 3 && channel_ != 1) {
-    LOG(WARNING) << "Not support " << channel_ << " channel image at reverse_color! Skip it!";
+    LOG(ERROR) << "Not support " << channel_ << " channel image at reverse_color! Skip it!";
     return;
   }
   int pos = 0;
@@ -638,7 +639,7 @@ void Image::reverse_color() {
 void Image::threshold_binary(const int &threshold) {
   // assert
   if (channel_ != 1) {
-    LOG(WARNING) <<  "Image::threshold_binary need image channel is 1, but got " << channel_ << "! Skip it!";
+    LOG(ERROR) <<  "Image::threshold_binary need image channel is 1, but got " << channel_ << "! Skip it!";
     return;
   }
 
@@ -654,7 +655,7 @@ void Image::threshold_binary(const int &threshold) {
 void Image::bgr2gray() {
   // assert
   if (data_ == nullptr) {
-    LOG(WARNING) << "Image::to_gray got an empty image! Skip it!";
+    LOG(ERROR) << "Image::to_gray got an empty image! Skip it!";
     return;
   }
 
@@ -677,4 +678,28 @@ void Image::bgr2gray() {
 
   // set
   channel_ = 1;
+}
+void Image::gray_stretch(const int &x1, const int &y1, const int &x2, const int &y2) {
+  // assert
+  if (channel_ != 1) {
+    LOG(ERROR) << "Image::contrast_stretching_gray need channel is 1, but got " << channel_ << ". Skip it!";
+    return;
+  }
+
+  // gray_stretch
+  int pos = 0;
+  for (int i = 0; i < height_; i++) {
+    for (int j = 0; j < width_; j++) {
+      pos = i * this->stride() + j * channel_;
+      if (data_[pos] < x1) {
+        data_[pos] = y1 / x1 * data_[pos];
+      }
+      else if (data_[pos] < x2) {
+        data_[pos] = (y2 - y1) / (x2 - x1) * (data_[pos] - x1) + y1;
+      }
+      else {
+        data_[pos] = (255 - y2) / (255 - x2) * (data_[pos] - x2) + y2;
+      }
+    }
+  }
 }
