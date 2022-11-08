@@ -627,7 +627,7 @@ void Image::reverse_color() {
   int pos = 0;
   for (int i = 0; i < height_; i++) {
     for (int j = 0; j < width_; j++) {
-      for (int k = 0; j < channel_; k ++) {
+      for (int k = 0; k < channel_; k ++) {
         pos = i * this->stride() + j * channel_ + k;
         data_[pos] = 255 - data_[pos];
       }

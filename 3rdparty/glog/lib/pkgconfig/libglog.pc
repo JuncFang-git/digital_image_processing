@@ -1,0 +1,11 @@
+prefix=/mnt/wsl/docker-desktop-bind-mounts/Ubuntu-18.04/e3c7baf107799e17ed3922ef2aee1e4a4f88222ffec17745484f1db896ca1719/software/glog/install
+exec_prefix=/mnt/wsl/docker-desktop-bind-mounts/Ubuntu-18.04/e3c7baf107799e17ed3922ef2aee1e4a4f88222ffec17745484f1db896ca1719/software/glog/install/bin
+libdir=/mnt/wsl/docker-desktop-bind-mounts/Ubuntu-18.04/e3c7baf107799e17ed3922ef2aee1e4a4f88222ffec17745484f1db896ca1719/software/glog/install/lib
+includedir=/mnt/wsl/docker-desktop-bind-mounts/Ubuntu-18.04/e3c7baf107799e17ed3922ef2aee1e4a4f88222ffec17745484f1db896ca1719/software/glog/install/include
+
+Name: libglog
+Description: Google Log (glog) C++ logging framework
+Version: 0.7.0
+Libs: -L${libdir} -lglog
+Libs.private: -lpthread -lgflags
+Cflags: -I${includedir}
