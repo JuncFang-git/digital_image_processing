@@ -49,6 +49,14 @@ void gray_stretch_test(Image &input) {
   input_copy.write_jpg("../demo/result/gray_stretch.png", 100);
   LOG(INFO) << "End " << __func__ << " ...";
 }
+void histogram_equalize_test(Image &input) {
+  LOG(INFO) << "Begin " << __func__ << " ...";
+  Image input_copy(input);
+  input_copy.bgr2gray();
+  input_copy.histogram_equalize();
+  input_copy.write_jpg("../demo/result/histogram_equalize.png", 100);
+  LOG(INFO) << "End " << __func__ << " ...";
+}
 int main() {
   std::cout << "hello" << std::endl;
   Image input_image("../demo/test_image/lenna.png");
@@ -62,4 +70,6 @@ int main() {
   threshold_binary_test(input_image);
   // gray_stretch_test
   gray_stretch_test(input_image);
+  // histogram_equalize_test
+  histogram_equalize_test(input_image);
 }

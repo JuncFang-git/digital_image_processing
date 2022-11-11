@@ -667,7 +667,8 @@ void Image::bgr2gray() {
     for (int j = 0; j < width_; j++) {
       pos_original = i * this->stride() + j * channel_;
       pos_gray = i * width_ + j;
-      tmp_data_[pos_gray] = (data_[pos_original + 0] + data_[pos_original + 1] + data_[pos_original + 2]) / 3; // average rgb
+      // 心理学公式 Gray = 0.3*R + 0.59*G + 0.11*B 的位移写法
+      tmp_data_[pos_gray] = (28 * data_[pos_original + 0] + 151 * data_[pos_original + 1] + 77 * data_[pos_original + 2]) >> 8; // average rgb
     }
   }
 
@@ -700,6 +701,44 @@ void Image::gray_stretch(const int &x1, const int &y1, const int &x2, const int 
       else {
         data_[pos] = (255 - y2) / (255 - x2) * (data_[pos] - x2) + y2;
       }
+    }
+  }
+}
+void Image::histogram_equalize() {
+  // assert
+  if (channel_ != 1) {
+    LOG(ERROR) << "Image::histogram_equalize need channel is 1, but got " << channel_ << ". Skip it!";
+    return;
+  }
+
+  int gray_static[256]{}; //每个灰度值的统计像素个数
+  double gray_accumulation[256]{}; //从0到当前灰度值的累计值像素个数
+  double gray_equal[256]{}; //变换函数
+
+  // 统计灰度
+  for (int i = 0; i < height_; i++) {
+    for (int j = 0; j < width_; j++) {
+      int value = data_[i * width_ + j];
+      gray_static[value]++;
+    }
+  }
+
+  // 统计累积值
+  gray_accumulation[0] = gray_static[0];
+  for (int i = 1; i < 256; i++) {
+    gray_accumulation[i] = gray_accumulation[i-1] + gray_static[i];
+  }
+
+  // 计算变换函数
+  for (int i = 0; i < 256; i++) {
+    gray_equal[i] = 255.f / (width_ * height_) * gray_accumulation[i];
+  }
+
+  // 进行映射
+  for (int i = 0; i < height_; i++) {
+    for (int j = 0; j < width_; j++) {
+      unsigned char old_value = data_[i * width_ + j];
+      data_[i * width_ + j] = gray_equal[old_value];
     }
   }
 }
