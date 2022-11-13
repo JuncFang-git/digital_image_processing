@@ -5,19 +5,26 @@
 
 void free_bug_test() {
   // for opencv class
-  Image cv_data(10, 10, 3);
-//  cv::Mat cv_image(cv::Size(10, 10), );
+//  cv::Mat cv_image(cv::Size(10, 10), CV_8UC3);
+//  unsigned char * ptr_cv_data = cv_image.data;
+//  LOG(INFO) << (void *)(cv_image.data) << " , " << (int)*cv_image.data;
+//  LOG(INFO) << (void *)ptr_cv_data << " , " << (int)*ptr_cv_data;
+//
+//  delete[] ptr_cv_data;
+//  LOG(INFO) << "----------";
+//  LOG(INFO) << (void *)cv_image.data << " , " << (int)*cv_image.data;
+//  LOG(INFO) << (void *)ptr_cv_data << " , " << (int)*ptr_cv_data;
 
   // for Image class
   Image image(10, 10, 3);
   unsigned char * ptr_data = image.data();
-  LOG(INFO) << image.data() << " , " << *image.data();
-  LOG(INFO) << ptr_data << " , " << *ptr_data;
+  LOG(INFO) << (void *)image.data() << " , " << (int)*image.data();
+  LOG(INFO) << (void *)ptr_data << " , " << (int)*ptr_data;
 
   delete[] ptr_data;
 
-  LOG(INFO) << image.data() << " , " << *image.data();
-  LOG(INFO) << ptr_data << " , " << *ptr_data;
+  LOG(INFO) << (void *)image.data() << " , " << (int)*image.data();
+  LOG(INFO) << (void *)ptr_data << " , " << (int)*ptr_data;
 }
 void reverse_color_test(const Image &input) {
   LOG(INFO) << "Begin " << __func__ << " ...";
