@@ -59,11 +59,13 @@ class Image {
 
  private:
   unsigned char *data_ = nullptr;
+  float *hsv_data_ = nullptr;
   int width_;
   int height_;
   int channel_;
   bool is_empty_ = true;
   int fast_mean_filter_c1(const int &radius);
   int fast_mean_filter_c3(const int &radius);
+  void bgr2hsv();
 };
 #endif //IMAGE_H_

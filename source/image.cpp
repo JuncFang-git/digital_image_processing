@@ -742,3 +742,9 @@ void Image::histogram_equalize() {
     }
   }
 }
+void Image::bgr2hsv() {
+  if (channel_ != 3) {
+    LOG(ERROR) << "Image::bgr2hsv need image at rbg space but found channel = " << channel_ << " Skip it...";
+    return;
+  }
+}
