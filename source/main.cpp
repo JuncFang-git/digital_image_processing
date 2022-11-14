@@ -64,6 +64,14 @@ void histogram_equalize_test(Image &input) {
   input_copy.write_jpg("../demo/result/histogram_equalize.png", 100);
   LOG(INFO) << "End " << __func__ << " ...";
 }
+void hsv_test(Image &input) {
+  LOG(INFO) << "Begin " << __func__ << " ...";
+  Image input_copy(input);
+  input_copy.bgr2hsv();
+  input_copy.hsv2bgr();
+  input_copy.write_jpg("../demo/result/hsv_test.png", 100);
+  LOG(INFO) << "End " << __func__ << " ...";
+}
 int main() {
   std::cout << "hello" << std::endl;
   Image input_image("../demo/test_image/lenna.png");
@@ -79,4 +87,6 @@ int main() {
   gray_stretch_test(input_image);
   // histogram_equalize_test
   histogram_equalize_test(input_image);
+  // hsv_test
+  hsv_test(input_image);
 }

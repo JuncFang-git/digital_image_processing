@@ -56,6 +56,10 @@ class Image {
   void bgr2gray();
   void gray_stretch(const int &x1, const int &y1, const int &x2, const int &y2);
   void histogram_equalize();
+  void bgr2hsv();
+  void hsv2bgr();
+  void bgr2yuv(int *yuv_data, int &width, int &height, int &channel);
+  void yuv2bgr(int *yuv_data, int &width, int &height, int &channel);
 
  private:
   unsigned char *data_ = nullptr;
@@ -66,6 +70,5 @@ class Image {
   bool is_empty_ = true;
   int fast_mean_filter_c1(const int &radius);
   int fast_mean_filter_c3(const int &radius);
-  void bgr2hsv();
 };
 #endif //IMAGE_H_

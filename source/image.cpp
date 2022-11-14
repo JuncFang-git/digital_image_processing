@@ -747,4 +747,171 @@ void Image::bgr2hsv() {
     LOG(ERROR) << "Image::bgr2hsv need image at rbg space but found channel = " << channel_ << " Skip it...";
     return;
   }
+  if (hsv_data_ != nullptr) {
+    LOG(WARNING) << "hsv_data_ not empty. rebuild it !";
+    delete[] hsv_data_;
+  }
+  hsv_data_ = new float[width_ * height_ * channel_];
+  for (int i = 0; i < height_; i++) {
+    for (int j = 0; j < width_; j++) {
+      int pos = i * this->stride() + j * channel_;
+      float max_value{}, min_value{};
+      float b = data_[pos    ] / 255.f;
+      float g = data_[pos + 1] / 255.f;
+      float r = data_[pos + 2] / 255.f;
+      max_value = max({r, g, b});
+      min_value = min({r, g, b});
+      // compute H value
+      if (max_value == min_value) {
+        hsv_data_[pos]  = 0;
+      }
+      else if (max_value == r && g >= b) {
+        hsv_data_[pos] = 60.f * (g - b) / (max_value - min_value);
+      }
+      else if (max_value == r && g < b) {
+        hsv_data_[pos] = 60.f * (g - b) / (max_value - min_value) + 360.f;
+      }
+      else if (max_value == g) {
+        hsv_data_[pos] = 60.f * (b - r) / (max_value - min_value) + 120.f;
+      }
+      else if (max_value == b) {
+        hsv_data_[pos] = 60.f * (r - g) / (max_value - min_value) + 240.f;
+      }
+      hsv_data_[pos] = clamp<float>(hsv_data_[pos], 0, 360);
+      // compute S value
+      if (max_value == 0) {
+        hsv_data_[pos + 1] = 0;
+      }
+      else {
+        hsv_data_[pos + 1] = (max_value - min_value) / max_value;
+      }
+      // compute V value
+      hsv_data_[pos + 2] = max_value;
+    }
+  }
+}
+void Image::hsv2bgr() {
+  if (channel_ != 3) {
+    LOG(ERROR) << "Image::hsv2bgr need image data_ at bgr space but found channel = " << channel_ << " Skip it...";
+    return;
+  }
+  if (hsv_data_ == nullptr) {
+    LOG(WARNING) << "hsv_data_ is empty. Skip hsv2bgr!";
+    return;
+  }
+  float p{}, q{}, t{}, f{}, b{}, g{}, r{};
+  float H{}, S{}, V;
+  int h_floor{};
+  for (int i = 0; i < height_; i++) {
+    for (int j = 0; j < width_; j++) {
+      int pos = i * this->stride() + j * channel_;
+      H = hsv_data_[pos    ];
+      if (H == 360) {
+        H = 0;
+      }
+      S = hsv_data_[pos + 1];
+      V = hsv_data_[pos + 2];
+      h_floor = floor(hsv_data_[pos] / 60);
+      f = H / 60.f - h_floor;
+      p = V * (1.f - S);
+      q = V * (1.f - f * S);
+      t = V * (1.f - (1.f - f)  * S);
+      switch (h_floor) {
+        case 0:
+          // get bgr
+          b = p;
+          g = t;
+          r = V;
+          break;
+        case 1:
+          // get bgr
+          b = p;
+          g = V;
+          r = q;
+          break;
+        case 2:
+          // get bgr
+          b = t;
+          g = V;
+          r = p;
+          break;
+        case 3:
+          // get bgr
+          b = V;
+          g = q;
+          r = p;
+          break;
+        case 4:
+          // get bgr
+          b = V;
+          g = p;
+          r = t;
+          break;
+        case 5:
+          // get bgr
+          b = q;
+          g = p;
+          r = V;
+          break;
+        default:
+          break;
+      }
+      data_[pos    ] = (unsigned char)clamp<float>((b * 255.f), 0, 255);
+      data_[pos + 1] = (unsigned char)clamp<float>((g * 255.f), 0, 255);
+      data_[pos + 2] = (unsigned char)clamp<float>((r * 255.f), 0, 255);
+    }
+  }
+
+}
+void Image::bgr2yuv(int *yuv_data, int &width, int &height, int &channel) {
+  if (channel_ != 3) {
+    LOG(ERROR) << "Image::bgr2yuv need image data_ at bgr space but found channel = " << channel_ << " Skip it...";
+    return;
+  }
+  if (yuv_data == nullptr) {
+    LOG(ERROR) << "yuv_data is nullptr. Skip bgr2yuv!";
+    return;
+  }
+  if (width != width_ || height != height_ || channel != channel_) {
+    LOG(ERROR) << "Need yuv_data size same as image size ( " << width_ << " , " << height_ << " , " << channel_ << " )"
+    << "but got (" << width << " , " << height << " , " << channel << " ). Skip it";
+    return;
+  }
+  for (int i = 0; i < height_; i++) {
+    for (int j = 0; j < width_; j++) {
+      int pos = i * this->stride() + j * channel_;
+      // Y
+      yuv_data[pos    ] = (299 * data_[pos + 2] + 597 * data_[pos + 1] + 114 * data_[pos]) / 1000;
+      // U
+      yuv_data[pos + 1] = (-147 * data_[pos + 2] - 289 * data_[pos + 1] + 436 * data_[pos]) / 1000;
+      // V
+      yuv_data[pos + 2] = (615 * data_[pos + 2] - 515 * data_[pos + 1] - 100 * data_[pos]) / 1000;
+    }
+  }
+}
+void Image::yuv2bgr(int *yuv_data, int &width, int &height, int &channel) {
+  if (channel_ != 3) {
+    LOG(ERROR) << "Image::bgr2yuv need image data_ at bgr space but found channel = " << channel_ << " Skip it...";
+    return;
+  }
+  if (yuv_data == nullptr) {
+    LOG(ERROR) << "yuv_data is nullptr. Skip bgr2yuv!";
+    return;
+  }
+  if (width != width_ || height != height_ || channel != channel_) {
+    LOG(ERROR) << "Need yuv_data size same as image size ( " << width_ << " , " << height_ << " , " << channel_ << " )"
+               << "but got (" << width << " , " << height << " , " << channel << " ). Skip it";
+    return;
+  }
+  for (int i = 0; i < height_; i++) {
+    for (int j = 0; j < width_; j++) {
+      int pos = i * this->stride() + j * channel_;
+      // B
+      data_[pos    ] = clamp<unsigned char>((1000 * yuv_data[pos] + 2032 * yuv_data[pos + 1]) / 1000, 0, 255);
+      // G
+      data_[pos + 1] = clamp<unsigned char>((1000 * yuv_data[pos] - 395 * yuv_data[pos + 1] - 581 * yuv_data[pos + 2]) / 1000, 0, 255);
+      // R
+      data_[pos + 2] = clamp<unsigned char>((1000 * yuv_data[pos] + 114 * yuv_data[pos + 2]) / 1000, 0, 255);
+    }
+  }
 }
